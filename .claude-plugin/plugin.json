@@ -17,8 +17,5 @@
     "verification",
     "guardrails"
   ],
-  "license": "MIT",
-  "components": {
-    "skills": ["./skills/ralph-loop-setup"]
-  }
+  "license": "MIT"
 }
