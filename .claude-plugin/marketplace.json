@@ -13,7 +13,7 @@
     {
       "name": "ralph-loop-setup",
       "description": "Install autonomous TDD workflows into any project. Supports fresh-context and same-session modes with guardrails.",
-      "source": "."
+      "source": "./"
     }
   ]
 }
