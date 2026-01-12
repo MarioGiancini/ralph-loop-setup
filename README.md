@@ -14,27 +14,26 @@ Based on [Geoffrey Huntley's Ralph Wiggum technique](https://ghuntley.com/ralph/
 
 ## Installation
 
-### Option 1: Plugin Install (Recommended)
+### Plugin Install
 
 ```bash
-/plugin install MarioGiancini/ralph-loop-setup
-```
+# Add the marketplace
+/plugin marketplace add MarioGiancini/ralph-loop-setup
 
-### Option 2: Git Clone
-
-```bash
-# Clone to your Claude Code user skills directory
-git clone https://github.com/MarioGiancini/ralph-loop-setup.git ~/.claude/skills/ralph-loop-setup
+# Install the plugin
+/plugin install ralph-loop-setup
 ```
 
 ### Updating
 
 ```bash
-# If installed via plugin
+# Update the plugin
 /plugin update ralph-loop-setup
 
-# If installed via git clone
-cd ~/.claude/skills/ralph-loop-setup && git pull
+# If cache issues, remove and re-add marketplace
+/plugin marketplace remove ralph-loop-setup
+/plugin marketplace add MarioGiancini/ralph-loop-setup
+/plugin install ralph-loop-setup
 ```
 
 ## Usage
