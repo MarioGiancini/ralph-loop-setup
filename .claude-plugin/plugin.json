@@ -1,0 +1,24 @@
+{
+  "name": "ralph-loop-setup",
+  "version": "1.0.0",
+  "description": "Install autonomous TDD workflows (Ralph loops) into any project. Supports fresh-context and same-session modes with guardrails for preventing repeated failures.",
+  "author": {
+    "name": "Mario Giancini",
+    "email": "mario.giancini@gmail.com",
+    "url": "https://mariogiancini.com"
+  },
+  "repository": "https://github.com/MarioGiancini/ralph-loop-setup",
+  "keywords": [
+    "ralph",
+    "tdd",
+    "autonomous",
+    "testing",
+    "iteration",
+    "verification",
+    "guardrails"
+  ],
+  "license": "MIT",
+  "components": {
+    "skills": ["./skills/ralph-loop-setup"]
+  }
+}

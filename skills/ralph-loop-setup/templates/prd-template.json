@@ -1,0 +1,30 @@
+{
+  "branchName": "feature/my-feature",
+  "acceptanceCriteria": [
+    "Verification command passes (tests + types + lint)",
+    "All tasks completed"
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "First task",
+      "acceptanceCriteria": [
+        "Criterion 1",
+        "Criterion 2"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "T-002",
+      "title": "Second task",
+      "acceptanceCriteria": [
+        "Criterion 1"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

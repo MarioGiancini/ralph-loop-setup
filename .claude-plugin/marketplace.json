@@ -1,0 +1,19 @@
+{
+  "name": "ralph-loop-setup",
+  "owner": {
+    "name": "Mario Giancini",
+    "email": "mario.giancini@gmail.com",
+    "url": "https://mariogiancini.com"
+  },
+  "metadata": {
+    "description": "Autonomous TDD workflows (Ralph loops) for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "ralph-loop-setup",
+      "description": "Install autonomous TDD workflows into any project. Supports fresh-context and same-session modes with guardrails.",
+      "source": "."
+    }
+  ]
+}
