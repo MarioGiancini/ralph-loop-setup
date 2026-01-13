@@ -88,8 +88,8 @@ log_verbose() {
   fi
 }
 
-# Open monitor in new terminal window (macOS)
-open_monitor_window() {
+# Open monitor in split pane (macOS)
+open_monitor_pane() {
   if [ "$(uname)" != "Darwin" ]; then
     echo "Auto-monitor only supported on macOS. Run in another terminal:"
     echo "  ./scripts/ralph/ralph-status.sh --watch"
@@ -100,22 +100,22 @@ open_monitor_window() {
   if pgrep -x "iTerm2" > /dev/null || [ -d "/Applications/iTerm.app" ]; then
     osascript <<EOF
 tell application "iTerm"
-  activate
-  create window with default profile
   tell current session of current window
+    split vertically with default profile
     write text "cd '$PROJECT_DIR' && ./scripts/ralph/ralph-status.sh --watch"
   end tell
 end tell
 EOF
-    echo "Opened monitor in new iTerm2 window"
+    echo "Opened monitor in vertical split pane"
   else
+    # Terminal.app doesn't support split panes, fall back to new window
     osascript <<EOF
 tell application "Terminal"
   activate
   do script "cd '$PROJECT_DIR' && ./scripts/ralph/ralph-status.sh --watch"
 end tell
 EOF
-    echo "Opened monitor in new Terminal window"
+    echo "Opened monitor in new Terminal window (split not supported)"
   fi
 }
 
@@ -180,9 +180,9 @@ echo "Logs: $RUN_DIR/"
 echo "=============================================="
 echo ""
 
-# Open monitor window if requested
+# Open monitor pane if requested
 if [ "$MONITOR" = true ]; then
-  open_monitor_window
+  open_monitor_pane
 else
   echo "Monitor with: ./scripts/ralph/ralph-status.sh --watch"
   echo "Tail logs:    ./scripts/ralph/ralph-tail.sh"
@@ -208,9 +208,15 @@ if [ ! -f "$PRD_FILE" ]; then
   exit 1
 fi
 
-REMAINING_TASKS=$(jq '[.features[] | select(.passes == false)] | length' "$PRD_FILE")
+# Count tasks that are incomplete AND not skipped
+REMAINING_TASKS=$(jq '[.features[] | select(.passes == false and .skip != true)] | length' "$PRD_FILE")
+SKIPPED_TASKS=$(jq '[.features[] | select(.skip == true)] | length' "$PRD_FILE")
 if [ "$REMAINING_TASKS" -eq 0 ]; then
-  echo "All tasks in prd.json are already complete!"
+  if [ "$SKIPPED_TASKS" -gt 0 ]; then
+    echo "All automatable tasks complete! ($SKIPPED_TASKS tasks skipped)"
+  else
+    echo "All tasks in prd.json are already complete!"
+  fi
   rm -f "$STATUS_FILE"
   exit 0
 fi
@@ -233,10 +239,10 @@ while [ $ITERATION -lt $MAX_ITERATIONS ]; do
   echo "Iteration $ITERATION of $MAX_ITERATIONS"
   echo "=============================================="
 
-  # Get next task info (structured)
+  # Get next task info (structured) - excludes completed and skipped tasks
   NEXT_TASK_JSON=$(jq '
     .features
-    | map(select(.passes == false))
+    | map(select(.passes == false and .skip != true))
     | sort_by(
         if .priority == "high" then 0
         elif .priority == "medium" then 1
@@ -335,8 +341,8 @@ EOF
     tail -10 "$OUTPUT_FILE" | sed 's/^/  | /'
   fi
 
-  # Check for completion promise
-  if grep -q "<promise>COMPLETE</promise>" "$OUTPUT_FILE"; then
+  # Check for completion promise (only in last 10 lines to avoid false positives from mentions in text)
+  if tail -10 "$OUTPUT_FILE" | grep -qE "^[[:space:]]*<promise>COMPLETE</promise>"; then
     echo ""
     echo "=============================================="
     echo "Completion promise detected!"
@@ -366,15 +372,15 @@ EOF
     log_verbose "Test failures detected"
   fi
 
-  # Check remaining tasks
-  REMAINING_TASKS=$(jq '[.features[] | select(.passes == false)] | length' "$PRD_FILE")
+  # Check remaining tasks (excluding skipped)
+  REMAINING_TASKS=$(jq '[.features[] | select(.passes == false and .skip != true)] | length' "$PRD_FILE")
   echo ""
   echo "Remaining tasks: $REMAINING_TASKS"
 
   if [ "$REMAINING_TASKS" -eq 0 ]; then
     echo ""
     echo "=============================================="
-    echo "All tasks complete!"
+    echo "All automatable tasks complete!"
     echo "=============================================="
     update_status "complete" "" ""
     rm -f "$STATE_FILE" "$STATUS_FILE"

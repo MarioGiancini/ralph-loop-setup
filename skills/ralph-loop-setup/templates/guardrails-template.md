@@ -34,6 +34,20 @@ Learned constraints that prevent repeated failures. Each "sign" is a rule discov
 
 ---
 
+## Task Management Signs
+
+### SIGN-005: Use Skip for Manual Tasks
+**Trigger:** Encountering a task that requires manual human intervention (creating accounts, API keys, dashboard configuration)
+**Instruction:** Set `skip: true` and `skipReason` in prd.json for tasks that cannot be automated. The Ralph loop will ignore skipped tasks and can complete without them.
+**Reason:** Allows loop to complete automatable work without blocking on manual steps
+
+### SIGN-006: Reference GitHub Issues in Commits
+**Trigger:** Committing changes for a prd.json task
+**Instruction:** Include `Fixes #N` or `Closes #N` in commit message body (where N is the `github_issue` from prd.json). Format: `fix: description\n\nFixes #61`
+**Reason:** Auto-closes GitHub issues when merged to main, maintains traceability
+
+---
+
 ## Project-Specific Signs
 
 Add signs below as you encounter project-specific failure patterns:

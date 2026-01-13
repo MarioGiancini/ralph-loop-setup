@@ -240,6 +240,62 @@ Ralph will automatically checkout/create the branch from prd.json.
 
 If both are specified, `--branch` flag takes precedence over prd.json `branchName`.
 
+## Skipping Tasks
+
+Some tasks cannot be automated (e.g., creating accounts, configuring API keys in dashboards). Use the `skip` field to exclude these from the loop while keeping them in prd.json for tracking.
+
+### prd.json Schema
+
+```json
+{
+  "id": "T-003",
+  "title": "Configure API credentials",
+  "github_issue": 83,
+  "passes": false,
+  "skip": true,
+  "skipReason": "Requires manual account creation and API key setup",
+  "notes": "Human needs to complete this manually"
+}
+```
+
+### Behavior
+
+- Tasks with `skip: true` are excluded from task selection
+- Loop can complete successfully even with skipped tasks remaining
+- Status dashboard shows skipped tasks with `⊘` indicator
+- Skipped tasks still count toward total but not toward "remaining"
+
+### When to Skip
+
+- Account/credential setup requiring human login
+- Dashboard configuration in external services
+- Tasks requiring physical access or approval workflows
+- Anything with "manual" in the acceptance criteria
+
+## Ralph Planner
+
+Use `/ralph-planner` to generate prd.json entries from GitHub issues:
+
+```bash
+/ralph-planner                    # Interactive selection from open issues
+/ralph-planner --labels bug,P1    # Filter by labels
+/ralph-planner --milestone v2.0   # Filter by milestone
+/ralph-planner --limit 10         # Limit number of issues
+```
+
+### Features
+
+- Fetches open issues from GitHub via `gh issue list`
+- Analyzes issues for automatable scope
+- Detects manual tasks and suggests `skip: true`
+- Extracts acceptance criteria from issue body
+- Sets priority from labels (P0→high, P1→high, P2→medium, etc.)
+- Avoids duplicates (skips issues already in prd.json)
+
+### Output
+
+Adds new entries to `plans/prd.json` with proper structure. Run `/ralph-loop --next --dry-run` after planning to preview.
+
 ## Guardrails (Signs)
 
 Guardrails are learned constraints that prevent repeated failures. They persist in `plans/guardrails.md` and are read at the start of each iteration.
@@ -254,6 +310,8 @@ The template includes seed signs that prevent common pitfalls:
 - **SIGN-002: Check All Tasks Before Complete** - Re-read prd.json to confirm ALL tasks pass
 - **SIGN-003: Document Learnings** - Update progress.md with patterns discovered
 - **SIGN-004: Small Focused Changes** - Keep changes incremental
+- **SIGN-005: Use Skip for Manual Tasks** - Set `skip: true` for tasks requiring human intervention
+- **SIGN-006: Reference GitHub Issues in Commits** - Include `Fixes #N` in commit messages
 
 ### Adding New Signs
 

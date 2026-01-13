@@ -133,6 +133,8 @@ print_tasks() {
   jq -r '.features[] |
     if .passes then
       "  ✓ \(.id) - \(.title)"
+    elif .skip then
+      "  ⊘ \(.id) - \(.title) [SKIPPED]"
     else
       "  ○ \(.id) - \(.title)"
     end
@@ -141,8 +143,13 @@ print_tasks() {
   echo "─────────────────────────────────────────────────────────────────"
 
   DONE=$(jq '[.features[] | select(.passes == true)] | length' "$PRD_FILE")
+  SKIPPED=$(jq '[.features[] | select(.skip == true)] | length' "$PRD_FILE")
   TOTAL=$(jq '.features | length' "$PRD_FILE")
-  echo -e "  ${GREEN}$DONE${NC} of ${BOLD}$TOTAL${NC} tasks complete"
+  if [ "$SKIPPED" -gt 0 ]; then
+    echo -e "  ${GREEN}$DONE${NC} of ${BOLD}$TOTAL${NC} complete, ${YELLOW}$SKIPPED${NC} skipped"
+  else
+    echo -e "  ${GREEN}$DONE${NC} of ${BOLD}$TOTAL${NC} tasks complete"
+  fi
 }
 
 print_recent_runs() {
