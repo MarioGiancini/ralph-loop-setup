@@ -68,10 +68,12 @@ To add Ralph loops to a project:
 
 This creates:
 - `.claude/commands/ralph-loop.md` - Start command (supports both modes)
-- `.claude/commands/cancel-ralph.md` - Cancel command
+- `.claude/commands/ralph-cancel.md` - Cancel/stop command (both modes)
+- `.claude/commands/ralph-planner.md` - Plan tasks from GitHub issues
 - `.claude/hooks/stop-hook.sh` - Same-session verification hook
 - `.claude/settings.json` - Hook registration (or updates existing)
 - `scripts/ralph/ralph.sh` - Fresh-context external loop
+- `scripts/ralph/ralph-stop.sh` - Stop script (kills processes, cleans state)
 - `scripts/ralph/ralph-status.sh` - Status dashboard script
 - `scripts/ralph/ralph-tail.sh` - Log tail helper
 - `scripts/ralph/snapshot.ts` - Visual snapshot script (optional)
@@ -113,8 +115,9 @@ Once installed:
 # Preview without starting
 /ralph-loop --next --dry-run
 
-# Cancel active loop
-/cancel-ralph
+# Cancel/stop active loop (works for both modes)
+/ralph-cancel
+/ralph-cancel --force  # Kill without prompting
 
 # Run external loop directly
 ./scripts/ralph/ralph.sh --max-iterations 100 --branch ralph/backlog --verbose --monitor
@@ -427,11 +430,13 @@ Default location is `plans/`. Edit the start command to change:
 
 See the templates directory for:
 - [ralph-loop-command.md](templates/ralph-loop-command.md) - Start command (both modes)
-- [cancel-ralph-command.md](templates/cancel-ralph-command.md) - Cancel command
+- [ralph-cancel-command.md](templates/ralph-cancel-command.md) - Cancel/stop command
+- [ralph-planner.md](templates/ralph-planner.md) - Plan tasks from GitHub issues
 - [ralph-fresh.sh](templates/ralph-fresh.sh) - External loop script
+- [ralph-stop.sh](templates/ralph-stop.sh) - Stop script (kills processes)
 - [ralph-status.sh](templates/ralph-status.sh) - Status dashboard script
 - [ralph-tail.sh](templates/ralph-tail.sh) - Log tail helper
-- [prd-template.json](templates/prd-template.json) - Task structure with branchName
+- [prd-template.json](templates/prd-template.json) - Task structure with skip field
 - [progress-template.md](templates/progress-template.md) - Session notes
 
 ## Troubleshooting
