@@ -119,29 +119,39 @@ EOF
   fi
 }
 
-# Update status file for monitoring
+# Update status file for monitoring (uses jq for safe JSON escaping)
 update_status() {
   local status="$1"
   local task_id="${2:-}"
   local task_title="${3:-}"
 
-  cat > "$STATUS_FILE" << EOF
-{
-  "run_id": "$RUN_ID",
-  "iteration": $ITERATION,
-  "max_iterations": $MAX_ITERATIONS,
-  "status": "$status",
-  "current_task": {
-    "id": "$task_id",
-    "title": "$task_title"
-  },
-  "remaining_tasks": $REMAINING_TASKS,
-  "started_at": "$START_TIME",
-  "updated_at": "$(date -Iseconds)",
-  "branch": "${BRANCH:-$(git branch --show-current)}",
-  "log_file": "$RUN_DIR/iteration-$ITERATION.txt"
-}
-EOF
+  jq -n \
+    --arg run_id "$RUN_ID" \
+    --argjson iteration "$ITERATION" \
+    --argjson max_iterations "$MAX_ITERATIONS" \
+    --arg status "$status" \
+    --arg task_id "$task_id" \
+    --arg task_title "$task_title" \
+    --argjson remaining "$REMAINING_TASKS" \
+    --arg started_at "$START_TIME" \
+    --arg updated_at "$(date -Iseconds)" \
+    --arg branch "${BRANCH:-$(git branch --show-current)}" \
+    --arg log_file "$RUN_DIR/iteration-$ITERATION.txt" \
+    '{
+      run_id: $run_id,
+      iteration: $iteration,
+      max_iterations: $max_iterations,
+      status: $status,
+      current_task: {
+        id: $task_id,
+        title: $task_title
+      },
+      remaining_tasks: $remaining,
+      started_at: $started_at,
+      updated_at: $updated_at,
+      branch: $branch,
+      log_file: $log_file
+    }' > "$STATUS_FILE"
 }
 
 # ============================================
