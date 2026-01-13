@@ -72,6 +72,8 @@ This creates:
 - `.claude/hooks/stop-hook.sh` - Same-session verification hook
 - `.claude/settings.json` - Hook registration (or updates existing)
 - `scripts/ralph/ralph.sh` - Fresh-context external loop
+- `scripts/ralph/ralph-status.sh` - Status dashboard script
+- `scripts/ralph/ralph-tail.sh` - Log tail helper
 - `scripts/ralph/snapshot.ts` - Visual snapshot script (optional)
 - `scripts/ralph/snapshot-config.json` - Snapshot page configuration
 - `plans/progress.md` - Cross-session context
@@ -90,6 +92,15 @@ Once installed:
 /ralph-loop --next
 /ralph-loop --next --max-iterations 100
 
+# Multi-task with verbose output
+/ralph-loop --next --verbose
+
+# Multi-task with auto-opened monitor window (macOS)
+/ralph-loop --next --monitor
+
+# Multi-task with verbose + monitor (recommended)
+/ralph-loop --next --verbose --monitor
+
 # Multi-task, same-session (opt-in)
 /ralph-loop --next --same-session
 
@@ -106,7 +117,88 @@ Once installed:
 /cancel-ralph
 
 # Run external loop directly
-./scripts/ralph/ralph.sh --max-iterations 100 --branch ralph/backlog
+./scripts/ralph/ralph.sh --max-iterations 100 --branch ralph/backlog --verbose --monitor
+```
+
+## Monitoring
+
+Ralph provides several tools to monitor loop progress in real-time.
+
+### Verbose Mode (`--verbose`)
+
+Adds detailed output during iterations:
+- Timing for Claude sessions and verification runs
+- Last 10 lines of output after each iteration
+- File path logging
+
+```bash
+./scripts/ralph/ralph.sh --verbose
+/ralph-loop --next --verbose
+```
+
+### Auto-Monitor (`--monitor`)
+
+Automatically opens a status dashboard in a new terminal window (macOS only).
+
+```bash
+./scripts/ralph/ralph.sh --monitor
+/ralph-loop --next --monitor
+```
+
+**Terminal detection:** Prefers iTerm2 if installed/running, falls back to Terminal.app.
+
+### Status Dashboard
+
+View loop status, task progress, and recent output:
+
+```bash
+# One-time status
+./scripts/ralph/ralph-status.sh
+
+# Live updates (refreshes every 2s)
+./scripts/ralph/ralph-status.sh --watch
+```
+
+**Shows:**
+- Loop status with colored indicators (RUNNING, VERIFYING, COMPLETE)
+- Progress bar and iteration count
+- Current task being worked on
+- Task checklist with completion status
+- Recent runs history
+- Last 8 lines of current output
+
+### Log Tailing
+
+Follow iteration output in real-time:
+
+```bash
+# Follow current/latest run
+./scripts/ralph/ralph-tail.sh
+
+# Follow all iteration files
+./scripts/ralph/ralph-tail.sh --all
+
+# Follow specific run
+./scripts/ralph/ralph-tail.sh 20260113-120000
+```
+
+### Status JSON File
+
+Machine-readable status at `.claude/ralph-status.local.json`:
+
+```json
+{
+  "run_id": "20260113-120000",
+  "iteration": 3,
+  "max_iterations": 50,
+  "status": "running",
+  "current_task": {"id": "T-001", "title": "..."},
+  "remaining_tasks": 2,
+  "started_at": "2026-01-13T12:00:00-08:00",
+  "updated_at": "2026-01-13T12:05:30-08:00",
+  "branch": "main",
+  "log_file": "scripts/ralph/runs/20260113-120000/iteration-3.txt"
+}
 ```
 
 ## Branch Handling Options
@@ -279,6 +371,8 @@ See the templates directory for:
 - [ralph-loop-command.md](templates/ralph-loop-command.md) - Start command (both modes)
 - [cancel-ralph-command.md](templates/cancel-ralph-command.md) - Cancel command
 - [ralph-fresh.sh](templates/ralph-fresh.sh) - External loop script
+- [ralph-status.sh](templates/ralph-status.sh) - Status dashboard script
+- [ralph-tail.sh](templates/ralph-tail.sh) - Log tail helper
 - [prd-template.json](templates/prd-template.json) - Task structure with branchName
 - [progress-template.md](templates/progress-template.md) - Session notes
 

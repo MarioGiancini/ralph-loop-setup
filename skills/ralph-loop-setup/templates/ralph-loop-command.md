@@ -1,7 +1,7 @@
 ---
 description: Start an autonomous Ralph loop for iterative development
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, TodoWrite
-argument-hint: "<task>" | --next [--same-session] [--snapshots] [--branch NAME] [--max-iterations N] [--dry-run]
+argument-hint: "<task>" | --next [--same-session] [--snapshots] [--branch NAME] [--max-iterations N] [--verbose] [--monitor] [--dry-run]
 ---
 
 # Ralph Loop - Autonomous Development
@@ -22,6 +22,8 @@ Start an autonomous iteration loop that continues until the task is complete or 
 - `--snapshots` - Capture visual snapshots before/after for UI regression review (advisory, non-blocking)
 - `--branch NAME` - Create/checkout branch before starting (e.g., `ralph/backlog` or `feature/task-name`)
 - `--max-iterations N` - Maximum iterations (default: 50)
+- `--verbose` or `-v` - Enable detailed output (timing, last 10 lines of each iteration)
+- `--monitor` or `-m` - Auto-open status dashboard in new Terminal window (macOS)
 - `--completion-promise TEXT` - Completion signal (default: COMPLETE)
 - `--dry-run` - Preview the prompt without starting the loop
 
@@ -34,6 +36,15 @@ Start an autonomous iteration loop that continues until the task is complete or 
 # Multi-task, fresh-context (default for --next)
 /ralph-loop --next
 /ralph-loop --next --max-iterations 100
+
+# Multi-task with verbose output
+/ralph-loop --next --verbose
+
+# Multi-task with auto-opened monitor window (macOS)
+/ralph-loop --next --monitor
+
+# Multi-task with verbose + monitor (recommended)
+/ralph-loop --next --verbose --monitor
 
 # Multi-task, same-session (opt-in)
 /ralph-loop --next --same-session
@@ -58,6 +69,8 @@ You are starting a Ralph loop - an autonomous development cycle.
 Extract from `$ARGUMENTS`:
 - `--next` flag: If present, auto-pick task from prd.json (uses fresh-context by default)
 - `--same-session` flag: If present WITH --next, use same-session mode instead of fresh-context
+- `--verbose` or `-v` flag: If present, enable detailed output
+- `--monitor` or `-m` flag: If present, auto-open status dashboard in new Terminal
 - `--snapshots` flag: If present, capture visual snapshots before/after
 - `--branch NAME`: If present, extract the branch name (value after --branch)
 - `--dry-run` flag: If present, output prompt and stop (don't create state file)
@@ -86,9 +99,12 @@ Determine which mode to use:
 1. Build the command: `./scripts/ralph/ralph.sh`
 2. Add `--max-iterations N` if specified
 3. Add `--branch NAME` if specified
-4. Output: "Starting fresh-context Ralph loop (each iteration gets clean context)..."
-5. Run the command using Bash
-6. The external script will handle everything - stop here after launching
+4. Add `--verbose` if verbose flag is present
+5. Add `--monitor` if monitor flag is present
+6. Output: "Starting fresh-context Ralph loop (each iteration gets clean context)..."
+7. If NOT using --monitor, output: "Monitor with: ./scripts/ralph/ralph-status.sh --watch"
+8. Run the command using Bash
+9. The external script will handle everything - stop here after launching
 
 **Important:** Fresh-context mode launches an external bash script that spawns new Claude sessions. This command will exit after starting the script. Do NOT create a state file for fresh mode.
 
