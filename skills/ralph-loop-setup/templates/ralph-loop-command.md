@@ -94,10 +94,10 @@ Determine which mode to use:
 6. Add `--screenshot` if screenshots flag is present
 7. Output: "Starting fresh-context Ralph loop (each iteration gets clean context)..."
 8. If NOT using --monitor, output: "Monitor with: ./scripts/ralph/ralph-status.sh --watch"
-9. Run the command using Bash
-10. The external script will handle everything - stop here after launching
+9. Run the command using Bash **with `run_in_background: true`** - this prevents the timeout indicator in Claude Code UI
+10. The external script will handle everything in the background
 
-**Important:** Fresh-context mode launches an external bash script that spawns new Claude sessions. This command will exit after starting the script. Do NOT create a state file for fresh mode.
+**Important:** Fresh-context mode launches an external bash script that spawns new Claude sessions. Use `run_in_background: true` when calling the Bash tool so the script runs in the background without blocking. Monitor progress with `./scripts/ralph/ralph-status.sh --watch` or the auto-opened monitor window. Do NOT create a state file for fresh mode.
 
 **For same-session mode:** Continue to Step 2 below.
 

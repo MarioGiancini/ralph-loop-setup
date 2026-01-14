@@ -335,20 +335,23 @@ $GUARDRAILS_CONTENT
 $SCREENSHOT_INSTRUCTIONS
 ## Instructions
 
-You are in a Ralph loop (fresh-context mode). Each iteration is a fresh Claude session.
+You are in a Ralph loop (fresh-context mode). **Each iteration = ONE task.**
 
 1. Read $PRD_FILE and find the first task where passes: false
 2. Read $PROGRESS_FILE for context from previous iterations
 3. Read and follow the Guardrails above - they prevent repeated mistakes
-4. Work on the task until acceptance criteria are met
+4. Work on **ONE task** until acceptance criteria are met
 5. Run verification: $VERIFY_COMMAND
-6. When the task is complete:
+6. When the current task is complete:
    - Update prd.json: set passes: true and add completed_at
    - Update progress.md with what you learned
-7. If ALL tasks in prd.json pass, output: <promise>COMPLETE</promise>
-8. Otherwise, end normally (next iteration will continue)
+   - **COMMIT your changes** with message: "feat: [task-id] - description"
+7. After completing ONE task, check prd.json:
+   - If ALL tasks pass: output <promise>COMPLETE</promise>
+   - If tasks remain: **EXIT immediately** - do NOT continue to other tasks
 
-**Important:** Only output the completion promise when ALL tasks pass (re-read prd.json to verify).
+**Critical:** This is fresh-context mode. Complete ONE task, commit, then EXIT.
+The bash loop will spawn a fresh session for the next task. Do NOT work on multiple tasks.
 EOF
 
   # Spawn fresh Claude session
@@ -363,12 +366,13 @@ EOF
   # The prompt re-anchors from files every iteration
   # --dangerously-skip-permissions required for non-interactive mode
   claude --print --output-format json --dangerously-skip-permissions \
-    "You are in a Ralph loop. Read .claude/ralph-state.local.md for instructions and guardrails, \
+    "You are in a Ralph loop (fresh-context mode). Read .claude/ralph-state.local.md for instructions, \
      then read $PRD_FILE to find the next failing task, \
-     and $PROGRESS_FILE for context. Follow all guardrails/signs in the state file. \
-     Work on the task, run '$VERIFY_COMMAND' to verify, \
+     and $PROGRESS_FILE for context. Follow all guardrails in the state file. \
+     Complete ONE task only, run '$VERIFY_COMMAND' to verify, commit your changes, \
      and update prd.json when complete. \
-     Output <promise>COMPLETE</promise> only when ALL tasks pass (re-read prd.json to verify)." \
+     CRITICAL: Complete ONE task then EXIT. Do NOT continue to other tasks. \
+     Output <promise>COMPLETE</promise> only when ALL tasks pass." \
     > "$JSON_FILE" 2>&1 || true
 
   CLAUDE_END=$(date +%s)
@@ -396,6 +400,9 @@ EOF
 
     log_verbose "Iteration tokens: in=$ITER_INPUT out=$ITER_OUTPUT cache_read=$ITER_CACHE_READ cost=\$$ITER_COST"
     log_verbose "Total tokens: in=$TOTAL_INPUT_TOKENS out=$TOTAL_OUTPUT_TOKENS cost=\$$TOTAL_COST_USD"
+
+    # Update status with token data so dashboard reflects current usage
+    update_status "processing" "$TASK_ID" "$TASK_TITLE"
   fi
 
   # Show output summary in verbose mode
