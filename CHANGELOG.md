@@ -5,6 +5,18 @@ All notable changes to the Ralph Loop Setup plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-13
+
+### Added
+- **Token usage tracking** - Monitor now displays input/output tokens, cache reads, and cost per run
+- **--screenshot flag** - Instructs Claude to capture UI screenshots via Playwright MCP after iterations
+- JSON output format parsing to extract token metrics from Claude CLI
+
+### Changed
+- Ralph fresh-context mode now uses `--output-format json` for richer metadata
+- Status file includes token accumulation across iterations
+- Monitor dashboard displays cost-to-date with formatted numbers
+
 ## [1.2.0] - 2026-01-13
 
 ### Added
@@ -61,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 1.3.0 | 2026-01-13 | Token usage tracking, screenshot flag, JSON output parsing |
 | 1.2.0 | 2026-01-13 | Renamed to `/ralph-cancel`, unified stop script, planner command |
 | 1.1.0 | 2026-01-13 | Skip field, vertical split, monitoring enhancements |
 | 1.0.0 | 2026-01-12 | Initial release |

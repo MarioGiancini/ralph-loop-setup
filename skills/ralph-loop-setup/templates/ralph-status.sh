@@ -92,6 +92,12 @@ print_status() {
     DURATION_STR="--"
   fi
 
+  # Parse token usage if available
+  TOKENS_INPUT=$(jq -r '.tokens.input // 0' "$STATUS_FILE" 2>/dev/null)
+  TOKENS_OUTPUT=$(jq -r '.tokens.output // 0' "$STATUS_FILE" 2>/dev/null)
+  TOKENS_CACHE_READ=$(jq -r '.tokens.cache_read // 0' "$STATUS_FILE" 2>/dev/null)
+  TOKENS_COST=$(jq -r '.tokens.cost_usd // "0"' "$STATUS_FILE" 2>/dev/null)
+
   # Print status
   echo -e "${BOLD}Loop Status:${NC} $STATUS_COLOR"
   echo -e "${BOLD}Run ID:${NC}      $RUN_ID"
@@ -118,6 +124,20 @@ print_status() {
   echo -e "  Title: $TASK_TITLE"
   echo ""
   echo -e "${BOLD}Tasks Remaining:${NC} $REMAINING"
+
+  # Token usage section (only show if we have data)
+  if [ "$TOKENS_INPUT" != "0" ] || [ "$TOKENS_OUTPUT" != "0" ]; then
+    echo ""
+    echo -e "${BOLD}Token Usage:${NC}"
+    # Format large numbers with commas
+    TOKENS_IN_FMT=$(printf "%'d" "$TOKENS_INPUT" 2>/dev/null || echo "$TOKENS_INPUT")
+    TOKENS_OUT_FMT=$(printf "%'d" "$TOKENS_OUTPUT" 2>/dev/null || echo "$TOKENS_OUTPUT")
+    TOKENS_CACHE_FMT=$(printf "%'d" "$TOKENS_CACHE_READ" 2>/dev/null || echo "$TOKENS_CACHE_READ")
+    echo -e "  Input:      ${CYAN}$TOKENS_IN_FMT${NC}"
+    echo -e "  Output:     ${CYAN}$TOKENS_OUT_FMT${NC}"
+    echo -e "  Cache Read: ${GREEN}$TOKENS_CACHE_FMT${NC}"
+    echo -e "  ${BOLD}Cost:${NC}       ${YELLOW}\$${TOKENS_COST}${NC}"
+  fi
 }
 
 print_tasks() {

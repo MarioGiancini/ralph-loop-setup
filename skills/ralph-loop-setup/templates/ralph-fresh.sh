@@ -42,10 +42,18 @@ MAX_ITERATIONS=50
 BRANCH=""
 VERBOSE=false
 MONITOR=false
+SCREENSHOT=false
 STATE_FILE=".claude/ralph-state.local.md"
 RUNS_DIR="scripts/ralph/runs"
 STATUS_FILE=".claude/ralph-status.local.json"
 PROJECT_DIR="$(pwd)"
+
+# Token tracking (accumulated across iterations)
+TOTAL_INPUT_TOKENS=0
+TOTAL_OUTPUT_TOKENS=0
+TOTAL_CACHE_READ=0
+TOTAL_CACHE_WRITE=0
+TOTAL_COST_USD=0
 
 # ============================================
 # Parse Arguments
@@ -69,9 +77,13 @@ while [[ $# -gt 0 ]]; do
       MONITOR=true
       shift
       ;;
+    --screenshot|-s)
+      SCREENSHOT=true
+      shift
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: ./ralph.sh [--max-iterations N] [--branch NAME] [--verbose|-v] [--monitor|-m]"
+      echo "Usage: ./ralph.sh [--max-iterations N] [--branch NAME] [--verbose|-v] [--monitor|-m] [--screenshot|-s]"
       exit 1
       ;;
   esac
@@ -137,6 +149,11 @@ update_status() {
     --arg updated_at "$(date -Iseconds)" \
     --arg branch "${BRANCH:-$(git branch --show-current)}" \
     --arg log_file "$RUN_DIR/iteration-$ITERATION.txt" \
+    --argjson total_input_tokens "$TOTAL_INPUT_TOKENS" \
+    --argjson total_output_tokens "$TOTAL_OUTPUT_TOKENS" \
+    --argjson total_cache_read "$TOTAL_CACHE_READ" \
+    --argjson total_cache_write "$TOTAL_CACHE_WRITE" \
+    --arg total_cost_usd "$TOTAL_COST_USD" \
     '{
       run_id: $run_id,
       iteration: $iteration,
@@ -150,7 +167,14 @@ update_status() {
       started_at: $started_at,
       updated_at: $updated_at,
       branch: $branch,
-      log_file: $log_file
+      log_file: $log_file,
+      tokens: {
+        input: $total_input_tokens,
+        output: $total_output_tokens,
+        cache_read: $total_cache_read,
+        cache_write: $total_cache_write,
+        cost_usd: $total_cost_usd
+      }
     }' > "$STATUS_FILE"
 }
 
@@ -175,6 +199,7 @@ echo "Branch: ${BRANCH:-<current>}"
 echo "Verify: $VERIFY_COMMAND"
 echo "Verbose: $VERBOSE"
 echo "Monitor: $MONITOR"
+echo "Screenshot: $SCREENSHOT"
 echo "Status: $STATUS_FILE"
 echo "Logs: $RUN_DIR/"
 echo "=============================================="
@@ -275,6 +300,22 @@ while [ $ITERATION -lt $MAX_ITERATIONS ]; do
     GUARDRAILS_CONTENT=$(cat "$GUARDRAILS_FILE")
   fi
 
+  # Build screenshot instructions if enabled
+  SCREENSHOT_INSTRUCTIONS=""
+  if [ "$SCREENSHOT" = true ]; then
+    SCREENSHOT_INSTRUCTIONS="
+## Screenshot Capture
+
+After completing UI-related work, use Playwright MCP to capture screenshots:
+1. Navigate to the affected page(s) using browser_navigate
+2. Take screenshots using browser_take_screenshot with descriptive filenames
+3. Save to: $RUN_DIR/screenshots/iteration-$ITERATION-{description}.png
+
+This documents visual changes for verification.
+"
+    mkdir -p "$RUN_DIR/screenshots"
+  fi
+
   # Create state file for this iteration
   cat > "$STATE_FILE" << EOF
 ---
@@ -291,7 +332,7 @@ Follow these learned constraints to avoid repeated failures:
 $GUARDRAILS_CONTENT
 
 ---
-
+$SCREENSHOT_INSTRUCTIONS
 ## Instructions
 
 You are in a Ralph loop (fresh-context mode). Each iteration is a fresh Claude session.
@@ -313,25 +354,49 @@ EOF
   # Spawn fresh Claude session
   echo "Spawning fresh Claude session..."
   OUTPUT_FILE="$RUN_DIR/iteration-$ITERATION.txt"
+  JSON_FILE="$RUN_DIR/iteration-$ITERATION.json"
   CLAUDE_START=$(date +%s)
 
   log_verbose "Output will be saved to $OUTPUT_FILE"
 
-  # Use claude CLI with print mode to capture output
+  # Use claude CLI with print mode and JSON output to capture tokens
   # The prompt re-anchors from files every iteration
   # --dangerously-skip-permissions required for non-interactive mode
-  claude --print --output-format text --dangerously-skip-permissions \
+  claude --print --output-format json --dangerously-skip-permissions \
     "You are in a Ralph loop. Read .claude/ralph-state.local.md for instructions and guardrails, \
      then read $PRD_FILE to find the next failing task, \
      and $PROGRESS_FILE for context. Follow all guardrails/signs in the state file. \
      Work on the task, run '$VERIFY_COMMAND' to verify, \
      and update prd.json when complete. \
      Output <promise>COMPLETE</promise> only when ALL tasks pass (re-read prd.json to verify)." \
-    > "$OUTPUT_FILE" 2>&1 || true
+    > "$JSON_FILE" 2>&1 || true
 
   CLAUDE_END=$(date +%s)
   CLAUDE_DURATION=$((CLAUDE_END - CLAUDE_START))
   log_verbose "Claude session completed in ${CLAUDE_DURATION}s"
+
+  # Extract result text for backward compatibility
+  jq -r '.result // empty' "$JSON_FILE" > "$OUTPUT_FILE" 2>/dev/null || cp "$JSON_FILE" "$OUTPUT_FILE"
+
+  # Parse token usage from JSON output
+  if [ -f "$JSON_FILE" ] && jq -e '.usage' "$JSON_FILE" > /dev/null 2>&1; then
+    ITER_INPUT=$(jq -r '.usage.input_tokens // 0' "$JSON_FILE")
+    ITER_OUTPUT=$(jq -r '.usage.output_tokens // 0' "$JSON_FILE")
+    ITER_CACHE_READ=$(jq -r '.usage.cache_read_input_tokens // 0' "$JSON_FILE")
+    ITER_CACHE_WRITE=$(jq -r '.usage.cache_creation_input_tokens // 0' "$JSON_FILE")
+    ITER_COST=$(jq -r '.total_cost_usd // 0' "$JSON_FILE")
+
+    # Accumulate totals
+    TOTAL_INPUT_TOKENS=$((TOTAL_INPUT_TOKENS + ITER_INPUT))
+    TOTAL_OUTPUT_TOKENS=$((TOTAL_OUTPUT_TOKENS + ITER_OUTPUT))
+    TOTAL_CACHE_READ=$((TOTAL_CACHE_READ + ITER_CACHE_READ))
+    TOTAL_CACHE_WRITE=$((TOTAL_CACHE_WRITE + ITER_CACHE_WRITE))
+    # For cost, use awk for floating point
+    TOTAL_COST_USD=$(awk "BEGIN {printf \"%.6f\", $TOTAL_COST_USD + $ITER_COST}")
+
+    log_verbose "Iteration tokens: in=$ITER_INPUT out=$ITER_OUTPUT cache_read=$ITER_CACHE_READ cost=\$$ITER_COST"
+    log_verbose "Total tokens: in=$TOTAL_INPUT_TOKENS out=$TOTAL_OUTPUT_TOKENS cost=\$$TOTAL_COST_USD"
+  fi
 
   # Show output summary in verbose mode
   if [ "$VERBOSE" = true ]; then
