@@ -5,6 +5,14 @@ All notable changes to the Ralph Loop Setup plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-01-13
+
+### Fixed
+- **Renamed `--snapshots` to `--screenshots`** - Correct Playwright terminology (snapshot = DOM/accessibility tree, screenshot = visual PNG)
+- Removed references to never-implemented `snapshot.ts` and `snapshot-config.json` files
+- Simplified screenshot feature to use Playwright MCP directly via `browser_take_screenshot`
+- Updated documentation in SKILL.md, README.md, CLAUDE.md, and command templates
+
 ## [1.3.0] - 2026-01-13
 
 ### Added
@@ -64,7 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **prd-template.json** - Task tracking with priority and acceptance criteria
 - **progress-template.md** - Cross-session context notes
 - **guardrails-template.md** - Learned constraints (Signs) system
-- **snapshot.ts** - Visual regression snapshot support
+- **--screenshot** flag - Instructs Claude to use Playwright MCP for visual screenshots
 - Core guardrails: SIGN-001 through SIGN-004
 - Branch handling via `--branch` flag or prd.json `branchName`
 - Multi-task mode with `--next` flag
@@ -73,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 1.3.1 | 2026-01-13 | Fixed --snapshots to --screenshots terminology |
 | 1.3.0 | 2026-01-13 | Token usage tracking, screenshot flag, JSON output parsing |
 | 1.2.0 | 2026-01-13 | Renamed to `/ralph-cancel`, unified stop script, planner command |
 | 1.1.0 | 2026-01-13 | Skip field, vertical split, monitoring enhancements |

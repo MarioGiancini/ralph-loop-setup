@@ -8,7 +8,7 @@ Based on [Geoffrey Huntley's Ralph Wiggum technique](https://ghuntley.com/ralph/
 
 - **Two modes**: Fresh-context (default for multi-task) and same-session (opt-in)
 - **Guardrails**: Learned constraints that prevent repeated failures
-- **Visual snapshots**: Optional before/after screenshots for UI regression review
+- **Visual screenshots**: Optional Playwright MCP screenshots for UI regression review
 - **Multi-task support**: Auto-pick next failing task from prd.json
 - **Project-specific**: Configuration lives in your repo, not global settings
 
@@ -74,8 +74,8 @@ The skill will create:
 # Multi-task, same-session (opt-in when context helps)
 /ralph-loop --next --same-session
 
-# With visual snapshots for UI regression review
-/ralph-loop --next --snapshots
+# With visual screenshots for UI regression review
+/ralph-loop --next --screenshots
 
 # Work on a separate branch
 /ralph-loop --next --branch ralph/backlog

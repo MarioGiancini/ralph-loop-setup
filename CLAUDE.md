@@ -106,9 +106,7 @@ ralph-loop-setup/
             ├── prd-template.json
             ├── progress-template.md
             ├── guardrails-template.md
-            ├── prompt-template.md
-            ├── snapshot.ts
-            └── snapshot-config.json
+            └── prompt-template.md
 ```
 
 ## Key Commands (Installed by Skill)

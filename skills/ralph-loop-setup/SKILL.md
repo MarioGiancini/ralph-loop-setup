@@ -76,8 +76,6 @@ This creates:
 - `scripts/ralph/ralph-stop.sh` - Stop script (kills processes, cleans state)
 - `scripts/ralph/ralph-status.sh` - Status dashboard script
 - `scripts/ralph/ralph-tail.sh` - Log tail helper
-- `scripts/ralph/snapshot.ts` - Visual snapshot script (optional)
-- `scripts/ralph/snapshot-config.json` - Snapshot page configuration
 - `plans/progress.md` - Cross-session context
 - `plans/guardrails.md` - Learned constraints ("signs") that prevent repeated failures
 - `plans/prd.json` - Task tracking
@@ -106,8 +104,8 @@ Once installed:
 # Multi-task, same-session (opt-in)
 /ralph-loop --next --same-session
 
-# With visual snapshots for UI regression review
-/ralph-loop --next --snapshots
+# With visual screenshots for UI regression review
+/ralph-loop --next --screenshots
 
 # Work on a separate branch
 /ralph-loop --next --branch ralph/backlog
@@ -330,67 +328,46 @@ When Ralph makes a repeated mistake, add a sign to prevent it:
 
 Signs are append-only. Mistakes evaporate, lessons accumulate.
 
-## Visual Snapshots (UI Regression Review)
+## Visual Screenshots (UI Regression Review)
 
-The `--snapshots` flag captures screenshots of key pages before and after Ralph loops complete. This helps catch UI/UX regressions that tests don't catch.
+The `--screenshots` flag instructs Claude to capture visual screenshots via Playwright MCP. This helps catch UI/UX regressions that tests don't catch.
+
+**Note:** In Playwright terminology, a "snapshot" is an accessibility/DOM tree capture, while a "screenshot" is a visual PNG/JPEG image. This feature uses `browser_take_screenshot` for visual captures.
 
 ### How It Works
 
-1. **Before:** Captures screenshots of configured pages when loop starts
-2. **During:** Normal Ralph loop execution (no interruption)
-3. **After:** Captures same pages when all tasks complete
-4. **Output:** Paths to before/after directories for manual comparison
-
-### Configuration
-
-Edit `scripts/ralph/snapshot-config.json`:
-
-```json
-{
-  "baseUrl": "http://localhost:3000",
-  "viewport": { "width": 1280, "height": 800 },
-  "outputDir": "scripts/ralph/snapshots",
-  "pages": [
-    { "name": "dashboard", "path": "/dashboard", "waitFor": "nav" },
-    { "name": "settings", "path": "/settings", "delay": 500 }
-  ]
-}
-```
-
-**Page options:**
-- `name` - Filename for the screenshot (required)
-- `path` - URL path to capture (required)
-- `selector` - CSS selector to capture specific element instead of viewport
-- `waitFor` - CSS selector to wait for before capturing
-- `delay` - Additional ms to wait after page load
+1. **Fresh-context mode:** The `--screenshot` flag is passed to `ralph.sh`, which adds Playwright instructions to the prompt
+2. **Same-session mode:** The state file includes `screenshots: true`, prompting Claude to use Playwright MCP
+3. **Output:** Screenshots saved to `scripts/ralph/runs/{run-id}/screenshots/`
 
 ### Usage
 
 ```bash
-# Capture before/after snapshots
-/ralph-loop --next --snapshots
+# Capture screenshots during loop iterations
+/ralph-loop --next --screenshots
 
-# Run snapshot script directly
-npx ts-node scripts/ralph/snapshot.ts before
-npx ts-node scripts/ralph/snapshot.ts after --run-id 20260111-120000
+# Fresh-context mode passes flag to ralph.sh
+./scripts/ralph/ralph.sh --screenshot
 ```
 
-### Output
+### Playwright MCP Tools Used
 
-Snapshots are stored in `scripts/ralph/snapshots/{run-id}/`:
+When `--screenshots` is enabled, Claude uses:
+- `browser_navigate` - Navigate to key pages
+- `browser_take_screenshot` - Capture visual PNG screenshots
+
+### Output Location
+
+Screenshots are saved in the run directory:
 ```
-scripts/ralph/snapshots/20260111-120000/
-├── before/
-│   ├── dashboard.png
-│   ├── settings.png
-│   └── manifest.json
-└── after/
-    ├── dashboard.png
-    ├── settings.png
-    └── manifest.json
+scripts/ralph/runs/20260113-120000/
+└── screenshots/
+    ├── iteration-1-dashboard.png
+    ├── iteration-1-settings.png
+    └── iteration-3-final.png
 ```
 
-**Important:** Snapshots are advisory, non-blocking. Tests passing is the gate; visual review is recommended but doesn't block completion.
+**Important:** Screenshots are advisory, non-blocking. Tests passing is the gate; visual review is recommended but doesn't block completion.
 
 ## Project Requirements
 
