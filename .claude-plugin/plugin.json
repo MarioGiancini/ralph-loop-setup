@@ -1,6 +1,6 @@
 {
   "name": "ralph-loop-setup",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "Install autonomous TDD workflows (Ralph loops) into any project. Supports fresh-context and same-session modes with guardrails for preventing repeated failures.",
   "author": {
     "name": "Mario Giancini",
