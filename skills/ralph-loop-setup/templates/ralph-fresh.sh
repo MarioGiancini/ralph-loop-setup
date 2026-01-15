@@ -217,7 +217,15 @@ echo ""
 log_verbose "Run directory created at $RUN_DIR"
 log_verbose "Start time: $START_TIME"
 
-# Handle branch if specified
+# Handle branch - use from prd.json if not specified via CLI
+if [ -z "$BRANCH" ] && [ -f "$PRD_FILE" ]; then
+  PRD_BRANCH=$(jq -r '.branch // empty' "$PRD_FILE")
+  if [ -n "$PRD_BRANCH" ]; then
+    BRANCH="$PRD_BRANCH"
+    log_verbose "Using branch from prd.json: $BRANCH"
+  fi
+fi
+
 if [ -n "$BRANCH" ]; then
   if git branch --list "$BRANCH" | grep -q "$BRANCH"; then
     git checkout "$BRANCH"
