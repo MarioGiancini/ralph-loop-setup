@@ -345,7 +345,7 @@ You are in a Ralph loop (fresh-context mode). **Each iteration = ONE task.**
 6. When the current task is complete:
    - Update prd.json: set passes: true and add completed_at
    - Update progress.md with what you learned
-   - **COMMIT your changes** with message: "feat: [task-id] - description"
+   - **COMMIT your changes** with message: "feat: [task-id] - description\n\nFixes #[github_issue]" (if github_issue is present in the task)
 7. After completing ONE task, check prd.json:
    - If ALL tasks pass: output <promise>COMPLETE</promise>
    - If tasks remain: **EXIT immediately** - do NOT continue to other tasks

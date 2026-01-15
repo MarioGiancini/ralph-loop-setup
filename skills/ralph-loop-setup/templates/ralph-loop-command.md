@@ -203,14 +203,15 @@ started_at: "[current ISO timestamp]"
 
 1. Work on the current task until ALL acceptance criteria are met
 2. Run verification command after significant changes
-3. Commit working changes incrementally
+3. Commit working changes incrementally (include `Fixes #[github_issue]` in commit message if task has github_issue)
 4. Update plans/progress.md with your progress
 
 ### When Current Task is Complete:
-1. Update prd.json: Set `passes: true` and add `completed_at: "YYYY-MM-DD"`
-2. Check if more `passes: false` tasks remain in prd.json
-3. If MORE tasks remain: End normally (stop hook will continue with next task)
-4. If ALL tasks pass:
+1. **COMMIT your changes** with message format: `feat: [task-id] - description\n\nFixes #[github_issue]` (if github_issue is present)
+2. Update prd.json: Set `passes: true` and add `completed_at: "YYYY-MM-DD"`
+3. Check if more `passes: false` tasks remain in prd.json
+4. If MORE tasks remain: End normally (stop hook will continue with next task)
+5. If ALL tasks pass:
    - If `screenshots: true` in state file, use Playwright MCP to capture final screenshots of key pages
    - Output `<promise>COMPLETE</promise>`
 
