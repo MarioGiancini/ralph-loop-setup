@@ -27,14 +27,19 @@ Based on [Geoffrey Huntley's Ralph Wiggum technique](https://ghuntley.com/ralph/
 ### Updating
 
 ```bash
-# Update the plugin
-/plugin update ralph-loop-setup
+# Update marketplace cache first
+claude plugin marketplace update ralph-loop-setup
+
+# Update the plugin (use full plugin@marketplace format)
+claude plugin update ralph-loop-setup@ralph-loop-setup
 
 # If cache issues, remove and re-add marketplace
-/plugin marketplace remove ralph-loop-setup
-/plugin marketplace add MarioGiancini/ralph-loop-setup
-/plugin install ralph-loop-setup
+claude plugin marketplace remove ralph-loop-setup
+claude plugin marketplace add MarioGiancini/ralph-loop-setup
+claude plugin install ralph-loop-setup
 ```
+
+> **Note:** Plugin updates use the format `plugin-name@marketplace-name`. You can find your installed plugin's full name with `claude plugin list`.
 
 ## Usage
 

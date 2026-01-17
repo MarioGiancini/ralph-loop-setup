@@ -5,6 +5,13 @@ All notable changes to the Ralph Loop Setup plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-01-17
+
+### Fixed
+- **Corrected plugin update command in README** - Update command requires `plugin-name@marketplace-name` format (`ralph-loop-setup@ralph-loop-setup`), not just plugin name
+- Added note explaining how to find full plugin name with `claude plugin list`
+- Changed commands to use `claude plugin` CLI format for clarity
+
 ## [1.3.2] - 2026-01-15
 
 ### Fixed
@@ -87,6 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 1.3.3 | 2026-01-17 | Fixed plugin update command syntax in README |
 | 1.3.2 | 2026-01-15 | One-task-per-iteration fix, GitHub issue in commits |
 | 1.3.1 | 2026-01-13 | Fixed --snapshots to --screenshots terminology |
 | 1.3.0 | 2026-01-13 | Token usage tracking, screenshot flag, JSON output parsing |
