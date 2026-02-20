@@ -1,6 +1,6 @@
 ---
 description: Start an autonomous Ralph loop for iterative development
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep, TodoWrite
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskList
 argument-hint: "<task>" | --next [--same-session] [--screenshots] [--branch NAME] [--max-iterations N] [--verbose] [--monitor] [--dry-run]
 ---
 

@@ -219,7 +219,7 @@ log_verbose "Start time: $START_TIME"
 
 # Handle branch - use from prd.json if not specified via CLI
 if [ -z "$BRANCH" ] && [ -f "$PRD_FILE" ]; then
-  PRD_BRANCH=$(jq -r '.branch // empty' "$PRD_FILE")
+  PRD_BRANCH=$(jq -r '.branchName // .branch // empty' "$PRD_FILE")
   if [ -n "$PRD_BRANCH" ]; then
     BRANCH="$PRD_BRANCH"
     log_verbose "Using branch from prd.json: $BRANCH"
@@ -233,6 +233,15 @@ if [ -n "$BRANCH" ]; then
     git checkout -b "$BRANCH"
   fi
   echo "Working on branch: $BRANCH"
+fi
+
+# Override verify command from prd.json if verifyCommand field exists
+if [ -f "$PRD_FILE" ]; then
+  PRD_VERIFY=$(jq -r '.verifyCommand // empty' "$PRD_FILE" 2>/dev/null || echo "")
+  if [ -n "$PRD_VERIFY" ]; then
+    VERIFY_COMMAND="$PRD_VERIFY"
+    echo "Verify override from prd.json: $VERIFY_COMMAND"
+  fi
 fi
 
 # Check if there are tasks to work on

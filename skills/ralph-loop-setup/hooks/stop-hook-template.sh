@@ -2,7 +2,8 @@
 # Ralph Wiggum Stop Hook Template
 # Intercepts exit, runs verification, and re-prompts if loop is active
 #
-# CUSTOMIZE: Change VERIFY_COMMAND for your project
+# CUSTOMIZE: Change VERIFY_COMMAND for your project's default.
+# Override per-PRD by adding "verifyCommand" to prd.json top-level.
 #
 # Based on:
 # - Ryan Carson's snarktank/ralph
@@ -15,7 +16,7 @@ set -euo pipefail
 # CUSTOMIZATION - Edit these for your project
 # ============================================
 
-# Verification command - change to match your project
+# Default verification command (overridden by prd.json verifyCommand if present)
 # Examples:
 #   Node/Next.js: "pnpm verify" or "npm run test && npm run lint"
 #   Python: "pytest && mypy . && ruff check ."
@@ -34,7 +35,7 @@ GUARDRAILS_FILE="plans/guardrails.md"
 # State file location
 RALPH_STATE_FILE=".claude/ralph-loop.local.md"
 
-# Read hook input from stdin (JSON with transcript_path)
+# Read hook input from stdin (JSON with last_assistant_message, stop_hook_active, etc.)
 HOOK_INPUT=$(cat)
 
 # If no state file, allow normal exit
@@ -61,8 +62,13 @@ if [ "$ACTIVE" != "true" ]; then
   exit 0
 fi
 
-# Get transcript path to check last output
-TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null || echo "")
+# Override verify command from prd.json if verifyCommand field exists
+if [ -f "$PRD_FILE" ]; then
+  PRD_VERIFY=$(jq -r '.verifyCommand // empty' "$PRD_FILE" 2>/dev/null || echo "")
+  if [ -n "$PRD_VERIFY" ]; then
+    VERIFY_COMMAND="$PRD_VERIFY"
+  fi
+fi
 
 # Check if we've hit max iterations
 NEXT_ITERATION=$((ITERATION + 1))
@@ -72,27 +78,34 @@ if [ "$NEXT_ITERATION" -gt "$MAX_ITERATIONS" ]; then
   exit 0
 fi
 
-# Check for completion promise in last output
-if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-  # Get last assistant message
-  LAST_LINE=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | tail -1 || echo "")
-  if [ -n "$LAST_LINE" ]; then
-    LAST_OUTPUT=$(echo "$LAST_LINE" | jq -r '
-      .message.content |
-      map(select(.type == "text")) |
-      map(.text) |
-      join("\n")
-    ' 2>/dev/null || echo "")
+# Check for completion promise using last_assistant_message (modern approach)
+# Falls back to transcript parsing if last_assistant_message is not available
+LAST_OUTPUT=$(echo "$HOOK_INPUT" | jq -r '.last_assistant_message // empty' 2>/dev/null || echo "")
 
-    # Extract promise text from <promise>...</promise> tags
-    PROMISE_TEXT=$(echo "$LAST_OUTPUT" | perl -0777 -pe 's/.*?<promise>(.*?)<\/promise>.*/\1/s; s/^\s+|\s+$//g; s/\s+/ /g' 2>/dev/null || echo "")
-
-    # Check if promise matches completion promise
-    if [ -n "$PROMISE_TEXT" ] && [ "$PROMISE_TEXT" = "$COMPLETION_PROMISE" ]; then
-      echo "Completion promise detected: $PROMISE_TEXT" >&2
-      rm -f "$RALPH_STATE_FILE"
-      exit 0
+if [ -z "$LAST_OUTPUT" ]; then
+  # Fallback: parse transcript for older Claude Code versions
+  TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null || echo "")
+  if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+    LAST_LINE=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | tail -1 || echo "")
+    if [ -n "$LAST_LINE" ]; then
+      LAST_OUTPUT=$(echo "$LAST_LINE" | jq -r '
+        .message.content |
+        map(select(.type == "text")) |
+        map(.text) |
+        join("\n")
+      ' 2>/dev/null || echo "")
     fi
+  fi
+fi
+
+# Extract promise text from <promise>...</promise> tags
+if [ -n "$LAST_OUTPUT" ]; then
+  PROMISE_TEXT=$(echo "$LAST_OUTPUT" | perl -0777 -pe 's/.*?<promise>(.*?)<\/promise>.*/\1/s; s/^\s+|\s+$//g; s/\s+/ /g' 2>/dev/null || echo "")
+
+  if [ -n "$PROMISE_TEXT" ] && [ "$PROMISE_TEXT" = "$COMPLETION_PROMISE" ]; then
+    echo "Completion promise detected: $PROMISE_TEXT" >&2
+    rm -f "$RALPH_STATE_FILE"
+    exit 0
   fi
 fi
 

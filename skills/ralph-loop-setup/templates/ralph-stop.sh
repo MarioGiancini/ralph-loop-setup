@@ -6,6 +6,7 @@ set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 STATE_FILE="$PROJECT_DIR/.claude/ralph-loop.local.md"
+FRESH_STATE_FILE="$PROJECT_DIR/.claude/ralph-state.local.md"
 STATUS_FILE="$PROJECT_DIR/.claude/ralph-status.local.json"
 
 # Colors
@@ -80,7 +81,25 @@ if [ -f "$STATE_FILE" ]; then
   fi
 fi
 
-# 4. Check for status file
+# 4. Check for fresh-context state file
+if [ -f "$FRESH_STATE_FILE" ]; then
+  FOUND_SOMETHING=true
+  echo -e "${YELLOW}Found fresh-context state file:${NC}"
+
+  ITERATION=$(grep "^iteration:" "$FRESH_STATE_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "?")
+  MAX_ITER=$(grep "^max_iterations:" "$FRESH_STATE_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "?")
+  echo "  Iteration: $ITERATION / $MAX_ITER"
+  echo ""
+
+  if [ "$FORCE" = true ]; then
+    rm -f "$FRESH_STATE_FILE"
+    echo -e "${GREEN}Removed fresh-context state file${NC}"
+  else
+    echo -e "Run with ${YELLOW}--force${NC} to remove state file"
+  fi
+fi
+
+# 5. Check for status file
 if [ -f "$STATUS_FILE" ]; then
   if [ "$FORCE" = true ]; then
     rm -f "$STATUS_FILE"

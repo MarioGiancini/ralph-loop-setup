@@ -59,7 +59,20 @@ Create or update `.claude/settings.json`:
 
 ### 1. Verification Command
 
-Edit `.claude/hooks/stop-hook.sh` and change `VERIFY_COMMAND`:
+**Option A (recommended):** Add `verifyCommand` to `plans/prd.json` top-level:
+
+```json
+{
+  "repo": "org/repo",
+  "verifyCommand": "pnpm test:mobile && pnpm typecheck --filter=mobile",
+  "features": [...]
+}
+```
+
+This overrides the default in both the stop hook and fresh-context script.
+Change it per-PRD as your project focus shifts.
+
+**Option B:** Edit `.claude/hooks/stop-hook.sh` and change `VERIFY_COMMAND`:
 
 ```bash
 # Node/Next.js
@@ -95,11 +108,13 @@ Edit `.claude/commands/ralph-loop.md` to match your context file paths:
 
 ## Gitignore
 
-Add the state file to `.gitignore`:
+Add the state files to `.gitignore`:
 
 ```
 # Ralph loop state (local only)
 .claude/ralph-loop.local.md
+.claude/ralph-state.local.md
+.claude/ralph-status.local.json
 ```
 
 ## Verification

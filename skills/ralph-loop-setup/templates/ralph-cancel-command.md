@@ -42,8 +42,9 @@ If `--force` is in `$ARGUMENTS`, or if user confirms:
 This will:
 1. Kill any `ralph.sh` processes
 2. Kill any Claude subprocesses from Ralph
-3. Remove `.claude/ralph-loop.local.md` state file
-4. Remove `.claude/ralph-status.local.json` status file
+3. Remove `.claude/ralph-loop.local.md` (same-session state file)
+4. Remove `.claude/ralph-state.local.md` (fresh-context state file)
+5. Remove `.claude/ralph-status.local.json` status file
 
 **Step 3: Report status**
 

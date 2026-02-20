@@ -1,6 +1,7 @@
 {
   "repo": "org/repo-name",
   "branchName": "feature/my-feature",
+  "verifyCommand": "pnpm verify",
   "acceptanceCriteria": [
     "Verification command passes (tests + types + lint)",
     "All tasks completed"

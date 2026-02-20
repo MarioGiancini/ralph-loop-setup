@@ -5,6 +5,21 @@ All notable changes to the Ralph Loop Setup plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-20
+
+### Added
+- **Dynamic verify command from prd.json** - Add `verifyCommand` field to prd.json top-level to override the default VERIFY_COMMAND in both stop hook and fresh-context script. No more manual syncing between scripts when switching project focus.
+- **`last_assistant_message` support** - Stop hook now uses the modern `last_assistant_message` field from Claude Code's Stop hook input instead of parsing transcript JSON. Falls back to transcript parsing for older versions.
+- **Fresh-context state file cleanup** - `ralph-stop.sh` now cleans up `.claude/ralph-state.local.md` (fresh-context mode) in addition to `.claude/ralph-loop.local.md` (same-session mode)
+
+### Changed
+- **`allowed-tools` updated** - Replaced deprecated `TodoWrite` with `TaskCreate, TaskUpdate, TaskList` in ralph-loop command template
+- **Branch field compatibility** - `ralph-fresh.sh` now reads `branchName` (Pitchello convention) OR `branch` from prd.json via `.branchName // .branch`
+- **Gitignore guidance** - Setup docs now list all three state files that should be gitignored
+
+### Fixed
+- Fresh-context state file (`.claude/ralph-state.local.md`) was not included in gitignore guidance, causing untracked file pollution after runs
+
 ## [1.3.3] - 2026-01-17
 
 ### Fixed
@@ -94,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 1.4.0 | 2026-02-20 | Dynamic verifyCommand, last_assistant_message, state cleanup |
 | 1.3.3 | 2026-01-17 | Fixed plugin update command syntax in README |
 | 1.3.2 | 2026-01-15 | One-task-per-iteration fix, GitHub issue in commits |
 | 1.3.1 | 2026-01-13 | Fixed --snapshots to --screenshots terminology |
