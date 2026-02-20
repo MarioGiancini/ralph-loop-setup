@@ -113,7 +113,9 @@ open_monitor_pane() {
     osascript <<EOF
 tell application "iTerm"
   tell current session of current window
-    split vertically with default profile
+    set newSession to (split vertically with default profile)
+  end tell
+  tell newSession
     write text "cd '$PROJECT_DIR' && ./scripts/ralph/ralph-status.sh --watch"
   end tell
 end tell
