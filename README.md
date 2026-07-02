@@ -1,3 +1,6 @@
+> [!WARNING]
+> **DEPRECATED (2026-06-20).** This plugin is retired in favor of native Claude Code loop primitives (`/goal`, `/loop`, `/schedule`, dynamic workflows / "use a workflow", auto mode, native worktree isolation). The hand-rolled bash harness here duplicates what the platform now ships, and was unmaintained (installed cache lagged this source). The *discipline* (objective gate, state file, maker/checker split, learned guardrails) lives on as the `running-loops` skill in digital-self (`.claude/skills/running-loops/`); the backlog model (`prd.json`) survives as a convention or via GitHub issues. Kept here for reference and git history only. Do not install in new projects.
+
 # Ralph Loop Setup
 
 A Claude Code plugin for installing autonomous TDD workflows (Ralph loops) into any project.
