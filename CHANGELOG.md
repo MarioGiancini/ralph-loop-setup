@@ -5,6 +5,11 @@ All notable changes to the Ralph Loop Setup plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-07-16
+
+### Deprecated
+- **Plugin fully deprecated** - Deprecation (announced 2026-06-20 in the README) now surfaced everywhere it can appear: `plugin.json` version bump + description, `marketplace.json` metadata and plugin descriptions, and a CLAUDE.md maintainer banner. No functional changes. Successor: native Claude Code loop primitives (`/goal`, `/loop`, `/schedule`, workflows) and the `running-loops` skill in digital-self.
+
 ## [1.4.0] - 2026-02-20
 
 ### Added

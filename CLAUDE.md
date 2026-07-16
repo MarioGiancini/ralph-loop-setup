@@ -1,5 +1,8 @@
 # Ralph Loop Setup - Plugin Maintenance Guide
 
+> [!WARNING]
+> **DEPRECATED (2026-06-20).** This plugin is retired in favor of native Claude Code loop primitives (`/goal`, `/loop`, `/schedule`, workflows). No new features or version bumps beyond deprecation housekeeping. See the README banner and the `running-loops` skill in digital-self for the successor. Kept for reference and git history only.
+
 This file provides guidance to Claude Code when working on this plugin repository.
 
 ## Plugin Context

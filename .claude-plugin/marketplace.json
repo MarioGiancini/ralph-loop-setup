@@ -6,13 +6,13 @@
     "url": "https://mariogiancini.com"
   },
   "metadata": {
-    "description": "Autonomous TDD workflows (Ralph loops) for Claude Code",
+    "description": "DEPRECATED (2026-06-20): Ralph loops retired in favor of native Claude Code loop primitives. Kept for reference only.",
     "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "ralph-loop-setup",
-      "description": "Install autonomous TDD workflows into any project. Supports fresh-context and same-session modes with guardrails.",
+      "description": "DEPRECATED (2026-06-20): retired in favor of native Claude Code loop primitives (/goal, /loop, /schedule, workflows). Do not install in new projects.",
       "source": "./"
     }
   ]

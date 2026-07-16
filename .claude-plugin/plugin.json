@@ -1,7 +1,7 @@
 {
   "name": "ralph-loop-setup",
-  "version": "1.4.0",
-  "description": "Install autonomous TDD workflows (Ralph loops) into any project. Supports fresh-context and same-session modes with guardrails for preventing repeated failures.",
+  "version": "1.4.1",
+  "description": "DEPRECATED (2026-06-20): retired in favor of native Claude Code loop primitives (/goal, /loop, /schedule, workflows). Do not install in new projects. Formerly: install autonomous TDD workflows (Ralph loops) into any project.",
   "author": {
     "name": "Mario Giancini",
     "email": "mario.giancini@gmail.com",
@@ -9,6 +9,7 @@
   },
   "repository": "https://github.com/MarioGiancini/ralph-loop-setup",
   "keywords": [
+    "deprecated",
     "ralph",
     "tdd",
     "autonomous",
